@@ -6,7 +6,7 @@
 1. [Project Overview](#-project-overview)
 2. [Code Structure](#-code-structure)
 3. [Algorithm Implementation](#-algorithm-implementation)
-4. [Usage and Manual](#--Usage-and-Manual)
+4. [Usage and Manual](#-usage-and-manual)
 5. [Testing and Validation](#-testing-and-validation)
 6. [Complete Demo in Self Run mode](#-complete-demo)
 
