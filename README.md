@@ -8,7 +8,7 @@
 3. [Algorithm Implementation](#-algorithm-implementation)
 4. [Usage and Manual](#-usage-and-manual)
 5. [Testing and Validation](#-testing-and-validation)
-6. [Complete Demo in Self-Run Mode](#-complete-demo)
+6. [Complete Demo](#-complete-demo)
 
 
 ---
