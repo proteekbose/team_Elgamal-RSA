@@ -8,84 +8,182 @@ from util import pseudorandomGenerator_NR as pg_nr
 from util import pseudorandomGenerator_BBS as pg_bbs
 
 
-def alice_public_info(rand_gen, r):
-    # Generates and display Alice's public information.
-    p = max(ptmr.get_primes(5, rand_gen))
+def alice_public_information(rand_gen, r):
+    max_prime = 0
+    # Generate 5 prime numbers using Miller-Rabin primality test and select the largest
+    primes = ptmr.get_primes(5, rand_gen)
+    for prime in primes:
+        if prime > max_prime:
+            max_prime = prime
+    p = max_prime
+
+    # Generate one of the primitive roots of p
     b = fa.primitive_root_search(p)
-    r = r or ptmr.get_primes(1, rand_gen)[0] % (p - 1)
+
+    # Generate a random number r if not provided
+    if r is None:
+        r = ptmr.get_primes(1, rand_gen)[0] % p - 1
+
+    # Calculate b raised to the power of r modulo p
     br = ma.fast_exponent(b, r, p)
-    print(f"Public info: \n\nAlice's prime number: {p} \ngenerator: {b}, "
-          f"\nAlice's public number : {br}.\nAlice's secret number: {r}, **[CONFIDENTIAL]***\n")
+    print(f"Public information:\nAlice's prime number: {p}\nGenerator: {b}\nPublic number: {br}.")
+    print(f"\nKeep Alice's secret number: {r}")
 
 
-def bob_public_info(p, b, l):
-    # Generates and display Bob's public information.
-    l = l or ptmr.get_primes(1, 2)[0] % (p - 1)
-    bl = ma.fast_exponent(b, l, p)
-    print(f"\nBob's public number: {bl}\nBob's secret number : {l}, **[CONFIDENTIAL]***\n")
+# Function to generate public information for Bob
+def bob_pub_info(rand_gen, r):
+    max_prime = 0
+    # Generate 5 prime numbers using Miller-Rabin primality test and select the largest
+    primes = ptmr.get_primes(5, rand_gen)
+    for prime in primes:
+        if prime > max_prime:
+            max_prime = prime
+    p = max_prime
+
+    # Generate one of the primitive roots of p
+    b = fa.primitive_root_search(p)
+
+    # Generate a random number r if not provided
+    if r is None:
+        r = ptmr.get_primes(1, rand_gen)[0] % p - 1
+
+    # Calculate b raised to the power of r modulo p
+    br = ma.fast_exponent(b, r, p)
+    print(f"Public information:\nBob's prime number: {p}\nGenerator: {b}\nPublic number: {br}.")
+    print(f"\nKeep Bob's secret number: {r}")
 
 
-def encrypt(brl, message, p):
-    # Encrypts a message.
-    return (message * brl) % p
+def encrypt(g, h, message, p):
+    """
+    Encrypt a message using ElGamal encryption.
+    Parameters:
+    g (int): A primitive root modulo p.
+    h (int): The recipient's public key (h = g^x mod p).
+    message (int): The plaintext message to be encrypted.
+    p (int): A large prime number.
+    Returns:
+    tuple: A pair (c1, c2) representing the encrypted message.
+    """
+    k = random.randint(2, p - 2)
+    calculate_c1 = lambda base, exponent, modulus: pow(base, exponent, modulus)
+    calculate_c2 = lambda msg, h_val, k_val, modulus: (msg * pow(h_val, k_val, modulus)) % modulus
+
+    c1 = calculate_c1(g, k, p)
+    c2 = calculate_c2(message, h, k, p)
+
+    print(f"🔐 Encrypted Message: (c1: {c1}, c2: {c2})")
+    return c1, c2
 
 
-def decrypt(brl_rev, cipher, p):
-    # Decrypts a message.
-    return (cipher * brl_rev) % p
+def decrypt(c1, c2, x, p):
+    """
+    Decrypt a message using ElGamal decryption.
+    Parameters:
+    c1 (int): The first component of the ciphertext.
+    c2 (int): The second component of the ciphertext.
+    x (int): The recipient's private key.
+    p (int): A large prime number.
+    Returns:
+    int: The decrypted plaintext message.
+    """
+    calculate_s = lambda c1_val, x_val, modulus: pow(c1_val, x_val, modulus)
+    calculate_message = lambda c2_val, s_inv_val, modulus: (c2_val * s_inv_val) % modulus
+
+    s = calculate_s(c1, x, p)
+    s_inv = ma.multiplicative_inverse(s, p)
+    message = calculate_message(c2, s_inv, p)
+
+    print(f"🔓 Decrypted Message: {message}")
+    return message
 
 
 def alice():
-    # Alice's actions in the El-Gamal crypto-system.
-    print(f"\nMake a choice of action:\n\n")
-    choice = input("Press (1) to Get Public Information\nPress (2) to Encrypt a message:\n").strip()
-    if choice == '1':
-        r = input("Enter your secret number?(y/n) :").lower().startswith('y') and int(
-            input("Alice's secret number : "))
-        alice_public_info(2, r)
-    elif choice == '2':
-        message, bl, r, p = (int(input(prompt)) for prompt in
-                             ["Enter the message: ", "Enter Bob's public number: ", "Enter Alice's secret number: ",
-                              "Enter the prime number: "])
-        brl = ma.fast_exponent(bl, r, p)
-        cipher = encrypt(brl, message, p)
-        print(f"The encoded ciphertext is : {cipher}\n")
+    get_choice = lambda: int(input(
+        "\n🌟 Alice, choose your action: \n1 - Get Public Information \n2 - Encrypt a Message\nSelect (1/2): "))
+    get_secret_number = lambda: int(input("\nEnter Alice's secret number: "))
+    encrypt_message = lambda g, bl, msg, p: encrypt(g, bl, msg, p)
+
+    print("\n🔮 You have chosen Alice")
+
+    p, message, bl, g = None, None, None, None
+    while None in [p, message, bl, g]:
+        try:
+            message = int(input("\n💬 Enter the message you want to send: "))
+            bl = int(input("🔑 Enter Bob's public key (h): "))
+            g = int(input("🌀 Enter the generator (g): "))
+            p = int(input("🔢 Enter the prime number: "))
+        except ValueError:
+            print("⚠️ Invalid input. Please try again.\n")
+
+    c1, c2 = encrypt_message(g, bl, message, p)
+    #print(f"📧 Encrypted Message: (c1: {c1}, c2: {c2})\n")
 
 
+# Interactive function for Bob to generate public information or decrypt a message
 def bob():
-    # Bob's actions in the El-Gamal crypto-system.
-    print(f"\nMake a choice of action:\n\n")
-    choice = input("Press (1) to Get Public Information\nPress (2) to Decrypt a message: ").strip()
-    if choice == '1':
-        p, b, br = map(int, input("Prime number : , generator : , public number : ").split())
-        if not ptmr.is_prime(p):
-            print(f"{p} is not a prime number.\n")
-            return
-        l = input("Enter your secret number?(y/n) :").lower().startswith('y') and int(
-            input("Bob's secret number : "))
-        bob_public_info(p, b, l)
-    elif choice == '2':
-        cipher, br, l, p = (int(input(prompt)) for prompt in
-                            ["Enter the ciphertext: ", "Enter Alice's public number: ", "Enter Bob's secret number: ",
-                             "Enter the prime number: "])
-        brl = ma.fast_exponent(br, l, p)
-        gcd, x, y = ma.extended_gcd(p, brl)
-        brl_rev = y % p
-        message = decrypt(brl_rev, cipher, p)
-        print(f"The decoded message is {message}\n")
+    get_choice = lambda: int(input("\n🌟 Bob, what would you like to do? \n1 - Get Public Info \n2 - Decrypt a Message\nSelect (1/2): "))
+    get_secret_number = lambda: int(input("\nEnter Bob's secret number: "))
+    decrypt_message = lambda c1, c2, x, p: decrypt(c1, c2, x, p)
+
+    print("\n🔮 You have chosen Bob")
+
+    choice = None
+    while choice not in [1, 2]:
+        try:
+            choice = get_choice()
+        except ValueError:
+            print("⚠️ Invalid input. Please try again.\n")
+
+    if choice == 1:
+        print("\n🔑 Generating Bob's Public Information...")
+        rand = input("Do you want to enter your own secret key? (y/n): ").lower()
+        r = get_secret_number() if rand == "y" else None
+        bob_pub_info(2, r)
+
+    elif choice == 2:
+        p, c1, c2, x = None, None, None, None
+        while None in [p, c1, c2, x]:
+            try:
+                c1 = int(input("\n🔒 Enter the first component of the ciphertext (c1): "))
+                c2 = int(input("🔒 Enter the second component of the ciphertext (c2): "))
+                x = int(input("🔐 Enter your secret number: "))
+                p = int(input("🔢 Enter the prime number: "))
+            except ValueError:
+                print("⚠️ Invalid input. Please try again.\n")
+
+        message = decrypt_message(c1, c2, x, p)
+        print(f"📜 Decrypted Message: {message}\n")
 
 
+
+# Interactive function for Eve to attempt to eavesdrop and decrypt a message
 def eve():
-    # Eve's actions in the El-Gamal crypto-system.
-    cipher, b, br, bl, p = (int(input(prompt)) for prompt in
-                            ["Enter the ciphertext: ", "Enter the generator: ", "Enter Alice's public number: ",
-                             "Enter Bob's public number: ", "Enter the prime number: "])
-    r, l = kg.baby_giant_step(br, b, p), kg.baby_giant_step(bl, b, p)
-    brl = ma.fast_exponent(br, l, p)
-    gcd, x, y = ma.extended_gcd(p, brl)
-    brl_rev = y % p
-    message = decrypt(brl_rev, cipher, p)
-    print(f"Alice's secret number : {r}\nBob's secret number : {l}\nThe decoded message : {message}\n")
+    p, c1, c2, b, bl = None, None, None, None, None
+    while None in [p, c1, c2, b, bl]:
+        try:
+            c1 = int(input("Enter the first component of the ciphertext (c1): "))
+            c2 = int(input("Enter the second component of the ciphertext (c2): "))
+            b = int(input("Enter the generator: "))
+            # br = int(input("Enter Alice's public number: "))
+            bl = int(input("Enter Bob's public number: "))
+            p = int(input("Enter the prime number: "))
+        except ValueError:
+            print("Invalid input.")
+
+    # Attempt to retrieve private keys using Baby-Step Giant-Step algorithm
+    # r = BBstepGNstep.baby_step_giant_step(br, b, p)
+    l = kg.baby_giant_step(bl, b, p)
+
+    # Since Eve does not know the private key directly, she attempts to crack it
+    # Assuming Eve has found the secret number 'x' (Bob's private key) through some means
+    x = l  # or r, depending on whose key she found
+
+    # Crack the ciphertext
+    message = decrypt(c1, c2, x, p)
+
+    # print(f"Alice's secret number is: {r}")
+    print(f"Bob's secret number is: {l}")
+    print(f"The decrypted message is: {message}\n")
 
 
 def controller_ElGamal():
@@ -95,8 +193,8 @@ def controller_ElGamal():
     # Main driver function for the El-Gamal crypto-system.
     print("\nChoose the role which you want to play:\n")
     while True:
-        role = input("Press (1) for Alice\nPress (2) for Bob\nPress (3) for Eve\nPress (4) for COMPLETE DEMO\nPress ("
-                     "0) to Exit \n").strip()
+        role = input("Press (1) for Alice\nPress (2) for Bob\nPress (3) for Eve\nPress (4) for COMPLETE DEMO [Self "
+                     "Run]\nPress (0) to Exit \n").strip()
         if role == '1':
             alice()
         elif role == '2':
@@ -111,75 +209,47 @@ def controller_ElGamal():
 
 
 def selfDemo():
-    print("\n🌟 Starting EL-GAMAL DEMONSTRATION...")
+    print("\n🌠 Starting EL-GAMAL DEMONSTRATION... 🌠")
+
+    # Random generator selection
     rand_gen = random.randint(1, 2)
-    print("🔍 Generating random prime number...\n")
+    print(f"🎲 Selecting Random Generator: {'Naor-Reingold' if rand_gen == 1 else 'Blum-Blum-Shub'}\n")
 
-    # Select the largest prime from a set of randomly generated primes
-    p = max(ptmr.get_primes(5, rand_gen))
+    # Lambda functions
+    get_largest_prime = lambda rand: max(ptmr.get_primes(5, rand))
+    get_primitive_root = lambda p: fa.primitive_root_search(p)
+    calculate_public_key = lambda base, secret, prime: ma.fast_exponent(base, secret, prime)
 
-    # Generate a primitive root b
-    b = fa.primitive_root_search(p)
+    # Generate prime and primitive root
+    p = get_largest_prime(rand_gen)
+    b = get_primitive_root(p)
 
-    # Generate random secret numbers r and l
+    # Generate secret numbers
     r, l = [ptmr.get_primes(1, rand_gen)[0] % (p - 1) for _ in range(2)]
 
     # Calculate public keys
-    br, bl = [ma.fast_exponent(b, secret, p) for secret in [r, l]]
-    shared_key = ma.fast_exponent(br, l, p)
+    br, bl = calculate_public_key(b, r, p), calculate_public_key(b, l, p)
 
     # Display public and private information
-    print_public_private_info(p, b, br, bl, r, l, shared_key)
+    print(f"🔑 Alice and Bob agree on Prime Number: {p} and Generator: {b}\n")
+    print(f"🔏 Alice's Secret Number: {r} ➡️ Public Key: {br}")
+    print(f"🔏 Bob's Secret Number: {l} ➡️ Public Key: {bl}\n")
+    print("⚙️ Generating Message...\n")
 
-    # Alice sends a message to Bob
+    # Generate and encrypt message
     message = pg_nr.rand_gen() if rand_gen == 1 else pg_bbs.rand_gen()
-    cipher = encrypt(shared_key, message, p)
-    plain = decrypt(shared_key, cipher, p)
-    print_message_exchange(message, cipher, plain)
+    c1, c2 = encrypt(b, bl, message, p)
+    print(f"📨 Alice sends encrypted message: (c1: {c1}, c2: {c2}) to Bob")
 
-    # Eve's attempt to crack the ciphertext
-    r2, l2 = [kg.baby_giant_step(pub, b, p) for pub in [br, bl]]
-    plaintext2 = decrypt(shared_key, cipher, p)
-    print_cracking_attempt(r2, l2, plaintext2)
-    print("🎉 Congratulations! The DEMO is completed.\n")
+    # Bob decrypts the message
+    plain = decrypt(c1, c2, l, p)
+    print(f"📬 Bob decrypts the message: {plain}\n")
 
+    # Eve's attempt to eavesdrop
+    print("🕵️‍♀️ Eve intercepts the message and attempts to decrypt it...")
+    r2, l2 = kg.baby_giant_step(br, b, p), kg.baby_giant_step(bl, b, p)
+    plaintext2 = decrypt(c1, c2, l2, p)
+    print(f"Eve's cracked secret numbers: {r2}, {l2}")
+    print(f"🔓 Eve decrypts the message: {plaintext2}\n")
 
-def print_public_private_info(p, b, br, bl, r, l, shared_key):
-    """Prints public and private information of Alice and Bob."""
-    print("Alice and Bob both agreed on:\nprime number: ", p, "\ngenerator: ", b)
-    print("\nAlice chooses her secret number:", r, "\nAlice calculates:", br)
-    print("\nBob chooses his secret number:", l, "\nBob calculates:", bl, "\n")
-    print("--------------------------")
-    print("The public information:\n")
-    print("Prime number:", p)
-    print("The generator:", b)
-    print("Alice's public number:", br)
-    print("Bob's public number:", bl)
-    print("\n--------------------------")
-    print("The private information:\n")
-    print("Alice's secret number:", r)
-    print("Bob's secret number:", l)
-    print("Alice and Bob both share the key:", shared_key)
-    print("\n-------------------------------------------------")
-    print("Now Alice and Bob can share messages between them.")
-    print("--------------------------------------------------")
-
-
-def print_message_exchange(message, cipher, plain):
-    """Prints the message exchange process between Alice and Bob."""
-    print("\nAlice calculates the cipher:", cipher)
-    print("Bob receives the cipher and calculates the plaintext:", plain)
-    print("They successfully exchanged information.\n")
-
-    print("\nEve knows the public information and the ciphertext.")
-    print("She can crack it without knowing the secrets.")
-    print("She can crack it within few seconds with a 24-bit number\n")
-
-
-def print_cracking_attempt(r2, l2, plaintext2):
-    """Prints Eve's attempt to crack the ciphertext."""
-    print("\nEve tries to crack the message [Baby-Step&Giant-Step].")
-    print("She knows has the secret numbers:", r2, "and", l2)
-    print("Using those information, she cracked the plaintext:", plaintext2, "\n")
-
-
+    print("🌈 EL-GAMAL DEMONSTRATION COMPLETED SUCCESSFULLY! 🎉")

@@ -58,3 +58,7 @@ def is_primitive_root(num, p):
     # Checks if a number is a primitive root modulo p.
     factors = all_prime_factors(p - 1)
     return all(ma.fast_exponent(num, (p - 1) // factor, p) != 1 for factor in factors)
+
+
+# pr= all_prime_factors(4139)
+# print(pr)

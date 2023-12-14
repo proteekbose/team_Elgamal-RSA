@@ -1,5 +1,5 @@
 import unittest
-from keyGenerator_BSGS import baby_giant_step
+from util.keyGenerator_BSGS import baby_giant_step
 
 
 class TestBabyGiantStep(unittest.TestCase):
@@ -16,5 +16,5 @@ class TestBabyGiantStep(unittest.TestCase):
         self.assertEqual(actual_l, expected_l)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     unittest.main()

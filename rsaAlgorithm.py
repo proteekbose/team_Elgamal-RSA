@@ -75,8 +75,9 @@ def controller_RSA():
 
         while user_selection is None:
             try:
-                print("Press (1) to Encrypt\nPress (2) to Decrypt\nPress (3) to Crack")
-                print("Press (4) to Generate Keys\nPress (5) for COMPLETE DEMO\nPress (0) to Exit")
+                print("Press (1) to play Alice (Encrypt)\nPress (2) to play Bob (Decrypt)\nPress (3) to play Eve ("
+                      "Crack)")
+                print("Press (4) to Generate Keys for Bob\nPress (5) for COMPLETE DEMO [Self Run]\nPress (0) to Exit")
                 user_selection = validate_input(int(input("\nPlease select a function: ")))
             except ValueError:
                 print("Invalid input. \n")
@@ -170,6 +171,7 @@ def verify(user_choice):
             continue
 
     return modulus, exponent
+
 
 
 def selfDemoRSA():

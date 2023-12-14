@@ -45,3 +45,7 @@ def get_modulus(count, rand):
     primes = get_primes(count, rand)
     return primes[0] * primes[1], primes[0], primes[1]
 
+
+
+# b= is_prime(302972288202616367311)
+# print(b)

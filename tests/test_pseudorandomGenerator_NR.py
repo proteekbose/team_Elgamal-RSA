@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from pseudorandomGenerator_NR import (
+from util.pseudorandomGenerator_NR import (
     generate_a, find_square, generate_b,
     generate_bit, generate_random_number, rand_gen, rand_gen_bi
 )
@@ -9,15 +9,15 @@ from pseudorandomGenerator_NR import (
 class TestPseudorandomGeneratorNR(unittest.TestCase):
 
     def test_generate_a(self):
-        # Testing based on known inputs and expected format of the output
+        # Testing with larger values
         n = 6
-        modulus = 47 * 37
-        x = 43
+        modulus = 1231 * 1321  # 4-digit primes
+        x = 1051  # 4-digit number
         result = generate_a(n, modulus, x)
         self.assertIsInstance(result, int)
 
     def test_find_square(self):
-        modulus = 47
+        modulus = 1231  # 4-digit prime
         square = find_square(modulus)
         self.assertTrue(0 < square < modulus)
 
@@ -29,15 +29,18 @@ class TestPseudorandomGeneratorNR(unittest.TestCase):
 
     def test_generate_bit(self):
         n = 6
-        p = 47
-        q = 37
-        x = 43
+        p = 1231  # 4-digit prime
+        q = 1321  # 4-digit prime
+        x = 1051  # 4-digit number
         bit = generate_bit(n, p, q, x)
         self.assertIn(bit, [0, 1])
 
     def test_generate_random_number(self):
         bit_count = 24
-        random_number = generate_random_number(bit_count)
+        n = 6
+        p = 1231  # 4-digit prime
+        q = 1321  # 4-digit prime
+        random_number = generate_random_number(bit_count, n, p, q)
         self.assertIsInstance(random_number, int)
 
     def test_rand_gen(self):
@@ -50,5 +53,5 @@ class TestPseudorandomGeneratorNR(unittest.TestCase):
         self.assertTrue(all(c in '01' for c in random_binary_string))
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     unittest.main()
