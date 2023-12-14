@@ -8,7 +8,7 @@
 3. [Algorithm Implementation](#-algorithm-implementation)
 4. [Usage and Manual](#-usage-and-manual)
 5. [Testing and Validation](#-testing-and-validation)
-6. [Complete Demo in Self Run mode](#-complete-demo)
+6. [Complete Demo in Self-Run Mode](#-complete-demo)
 
 
 ---
@@ -88,7 +88,8 @@ The project is available on GitHub:
 ![image](https://github.com/proteekbose/team_Elgamal-RSA/assets/147191386/78745df1-e570-479b-913b-64be60500814)
 
 ---
-### Complete Demo
+
+### ⚙️ Complete Demo
 Complete Demo of El-Gamal
 -----------------------------
 Choose your Cipher algorithm: 
