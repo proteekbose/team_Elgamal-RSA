@@ -66,7 +66,6 @@ The project is available on GitHub:
 ---
 
 ### 💻 Usage and Manual
-
 **Installation Requirements**
 - Python 3.6 or higher
 - PyCharm IDE (Recommended)
@@ -90,7 +89,6 @@ The project is available on GitHub:
 
 ---
 ### Complete Demo
-
 Complete Demo of El-Gamal
 -----------------------------
 Choose your Cipher algorithm: 
